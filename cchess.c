@@ -6,8 +6,10 @@
 #include <signal.h>
 #include <wchar.h>
 #include <locale.h>
+#include <stdbool.h>
 
 #include "board.c"
+#include "piece.c"
 
 #define RED   "\x1B[31m"
 #define RESET "\x1B[0m"
@@ -27,12 +29,13 @@ char move_to[2];
 int ask_move();
 int make_move();
 void debug_print_board();
+void translate_move(char *, int *);
+void move_piece(int *, int *);
 
 int main(int argc, char const *argv[]) {
 
-  initiate_board();
+  // Print the board
   print_board();
-
 
   while (1) {
     while (ask_move());
@@ -40,102 +43,120 @@ int main(int argc, char const *argv[]) {
     print_board();
   }
 
-
   return 0;
+}
+
+void move_piece(int * origin, int * dest) {
+  // Move piece in board from origin to dest
+  board[*dest][*(dest+1)] = board[*origin][*(origin+1)];
+  board[*origin][*(origin+1)] = 0;
 }
 
 void translate_move(char * cmove, int * imove) {
 
-  // printf("move: '%s'\n", cmove);
-  // printf("cmove[0] '%c' (d)%d (dn)%d\n", cmove[0], cmove[0], cmove[0]-'0');
-  // printf("cmove[0] (n)%d\n", (*cmove-'0')-49);
-  // printf("move[1]: '%d'\n", *(move+1)-'0');
-  // printf("move[1] '%c' (d)%d (c->d)%d\n", cmove[1], cmove[1], cmove[1]-'0');
-  // printf("move[1] (n)%d\n", 8-(cmove[1]-'0'));
-  // printf("\n");
+  // Get int components
+  int x = (*(cmove)-'0')-49; // Char to int and to board position
+  int y = 8-(*(cmove+1)-'0'); // Int to board position
 
-  int x = (*(cmove)-'0')-49;
-
-
-  int y = 8-(*(cmove+1)-'0');
-
+  // Set int move values
   *(imove) = y;
   *(imove+1) = x;
 
 }
 
-int get_piece_type(wchar_t piece) {
-  switch (piece) {
-    case white_king: return 0;
-    case white_queen: return 1;
-    case white_rook: return 2;
-    case white_bishop: return 3;
-    case white_knight: return 4;
-    case white_pawn: return 5;
-    case black_king: return 0;
-    case black_queen: return 1;
-    case black_rook: return 2;
-    case black_bishop: return 3;
-    case black_knight: return 4;
-    case black_pawn: return 5;
+/* Check if the diagonal move is clear one position before dest */
+int is_diagonal_clear(int * origin, int * dest) {
+  // Invalid diagonal
+  if (((abs(*(origin)) - abs(*(dest))) != 0) ||( (abs(*(origin+1)) - abs(*(dest+1))) != 0)) {
+    return false;
   }
-  return -1;
+
+  // TODO: Parallel?
+  for (int i = *origin; i < *dest; i++) {
+    /* code */
+  }
+
+  return true;
 }
 
-int get_piece_team(int * piece_position) {
-  wchar_t piece = board[*(piece_position)][*(piece_position+1)];
-  if (piece == (white_king | white_queen | white_rook | white_bishop | white_knight | white_pawn)) {
-    printf("Piece is in team 0\n");
-    return 0;
-  }
-  if (piece == (black_king | black_queen | black_rook | black_bishop | black_knight | black_pawn)) {
-    printf("Piece is in team 1\n");
-    return 1;
-  }
-  return 2;
+/* Check if the rect move is clear one position before dest */
+int is_rect_clear(int * origin, int * dest) {
+  return true;
 }
 
-int check_move(int * move_from, int * move_to) {
+bool eat_piece(int * position) {
+  // Check if there's a piece there
+  // if (board[*(position)][*(position+1)] == 0) return false;
+  // Add piece to the graveyard
+  printf(RED "Eating piece..." RESET);
+  return true;
+}
 
-  wchar_t piece_in_origin = board[*move_from][*(move_from+1)];
-  int team_in_origin = get_piece_team(move_from);
+/* Check if the move status like valid, invalid, eated piece and more */
 
-  wchar_t piece_in_dest = board[*move_to][*(move_to+1)];
-  int team_in_dest = get_piece_team(move_to);
+int check_move(int * origin, int * dest) {
 
-  int x_moves = *(move_from) - *(move_to);
-  int y_moves = *(move_from+1) - *(move_to+1);
+  wchar_t piece_in_origin = board[*origin][*(origin+1)];
+  wchar_t piece_in_dest = board[*dest][*(dest+1)];
 
-  // if (*move_to > 7 || *move_to < 0 || *(move_to+1) > 7 || *(move_to+1) < 0) {
-  //   return 2;
-  // }
+  int team_in_dest = get_piece_team(dest);
+  int team_in_origin = get_piece_team(origin);
 
-  //printf("x moves: %d, y moves: %d\n", x_moves, y_moves);
+  int x_moves = *(origin) - *(dest);
+  int y_moves = *(origin+1) - *(dest+1);
 
+  int origin_piece_type = get_piece_type(piece_in_origin);
+
+  // DEBUG
+  printf("Pieces : %lc(o) %lc(d)\n", piece_in_origin, piece_in_dest);
+  printf("Teams  : %d(o) %d(d)\n", team_in_dest, team_in_origin);
+  printf("[%d,%d]\n", *(origin), *(origin+1));
+  printf("piece type: %d\n", origin_piece_type);
+
+  /*  --- GENERAL RULES --- */
+  // If selected piece == 0 there's nothing selected
   if (piece_in_origin == 0) {
     return 1;
   }
 
-  int piece_type = get_piece_type(piece_in_origin);
+  // If the origin piece's team == dest piece's team is an invalid move
+  if (team_in_origin == team_in_dest) {
+    return 2;
+  }
 
-  printf("piece type: %d\n", piece_type);
-
-  switch (piece_type) {
+  /* --- SPECIFIC RULES --- */
+  switch (origin_piece_type) {
     case 0: // ♚
+      if (abs(x_moves) > 1 || abs(y_moves) > 1) return 0;
       break;
     case 1: // ♛
+      //Diagonal or straight move
       break;
     case 2: // ♜
-      printf("Case 2\n");
-      if ((y_moves > 0 && x_moves != 0) || (x_moves > 0 && y_moves != 0)) return 2;
+      if ((y_moves > 0 && x_moves != 0) || (x_moves > 0 && y_moves != 0)) return 20;
       break;
     case 3: // ♝
+      if ((abs(x_moves)-abs(y_moves)) != 0) return 30;
+      printf("break one\n");
       break;
     case 4: // ♞
-      if ((abs(x_moves) != 1 || abs(y_moves) != 2) && (abs(x_moves) != 2 || abs(y_moves) != 1)) return 4;
+      // Check if if it's a knight's valid move
+      if ((abs(x_moves) != 1 || abs(y_moves) != 2) && (abs(x_moves) != 2 || abs(y_moves) != 1)) return 40;
       break;
     case 5: // ♟
-      if (x_moves > 1 || y_moves > 0) return 5;
+      if (y_moves != 0) {
+        // Check if it's a diagonal move and it's not an empty location
+        if ((abs(y_moves) == 1 && abs(x_moves == 1)) && (team_in_dest != 0)) {
+          if (eat_piece(dest)) return 99;
+        }
+        return 50;
+      }
+      if (*origin == 6 || *origin == 1) {
+        if (x_moves > 2) return 51;
+      } else {
+        if (x_moves > 1) return 52;
+      }
+      break;
     default:
       break;
   }
@@ -150,12 +171,24 @@ int make_move() {
   translate_move(move_to, imove_to);
 
   int status = check_move(imove_from, imove_to);
+  /*
+  -- MOVE STATUS --
+
+  0X
+  1X
+  2X
+  3X
+  4X
+  5X
+
+  99 Eated piece
+
+  */
   printf("status %d\n", status);
 
   switch (status) {
-    case 0:
-      board[*imove_to][*(imove_to+1)] = board[*imove_from][*(imove_from+1)];
-      board[*imove_from][*(imove_from+1)] = 0;
+    case 0: //Simple move
+      move_piece(imove_from, imove_to);
       break;
     case 1:
       printf(RED "Nothing selected" RESET);
@@ -163,8 +196,12 @@ int make_move() {
     case 4:
       printf(RED "Invalid knight move" RESET);
       break;
+    case 99:
+      printf(RED "You defeated a piece" RESET);
+      move_piece(imove_from, imove_to);
+      break;
     default:
-      printf(RED "Invalid move" RESET);
+      printf(RED "Invalid move [%d]" RESET, status);
       break;
   }
 
@@ -181,7 +218,6 @@ void debug_print_board() {
 }
 
 int ask_move() {
-
 
   printf("\nMake your move: ");
   scanf("%s", move);
