@@ -11,7 +11,7 @@
 #define black_king   0x265A // ♚
 #define black_queen  0x265B // ♛
 #define black_rook   0x265C // ♜
-#define black_bishop 0x265D // ♗
+#define black_bishop 0x265D // ♝
 #define black_knight 0x265E // ♞
 #define black_pawn   0x265F // ♟
 
