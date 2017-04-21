@@ -120,30 +120,41 @@ int check_move(int * origin, int * dest) {
   }
 
   // If the origin piece's team == dest piece's team is an invalid move
-  if (team_in_origin == team_in_dest) {
-    return 2;
-  }
+  // if (team_in_origin == team_in_dest) {
+  //   return 2;
+  // }
 
   /* --- SPECIFIC RULES --- */
   switch (origin_piece_type) {
-    case 0: // ♚
+    case 0: /* --- ♚ --- */
       if (abs(x_moves) > 1 || abs(y_moves) > 1) return 0;
       break;
-    case 1: // ♛
+    case 1: /* --- ♛ --- */
       //Diagonal or straight move
+      if ((abs(x_moves)-abs(y_moves)) != 0) { // Check if it's a valid diagonal move
+        if ((y_moves > 0 && x_moves != 0) || (x_moves > 0 && y_moves != 0)) { // Check if it's a valid straight move
+          return 10;
+        } else {
+          // TODO
+          // clear_line();
+        }
+      } else {
+        // TODO
+        // clear_diagonal();
+      }
       break;
-    case 2: // ♜
+    case 2: /* --- ♜ --- */
       if ((y_moves > 0 && x_moves != 0) || (x_moves > 0 && y_moves != 0)) return 20;
       break;
     case 3: // ♝
       if ((abs(x_moves)-abs(y_moves)) != 0) return 30;
       printf("break one\n");
       break;
-    case 4: // ♞
+    case 4: /* --- ♞ --- */
       // Check if if it's a knight's valid move
       if ((abs(x_moves) != 1 || abs(y_moves) != 2) && (abs(x_moves) != 2 || abs(y_moves) != 1)) return 40;
       break;
-    case 5: // ♟
+    case 5: /* --- ♟ --- */
       if (y_moves != 0) {
         // Check if it's a diagonal move and it's not an empty location
         if ((abs(y_moves) == 1 && abs(x_moves == 1)) && (team_in_dest != 0)) {
@@ -192,6 +203,9 @@ int make_move() {
       break;
     case 1:
       printf(RED "Nothing selected" RESET);
+      break;
+    case 2:
+      printf(RED "Invalid move, cannot move into your own pieces position" RESET);
       break;
     case 4:
       printf(RED "Invalid knight move" RESET);
