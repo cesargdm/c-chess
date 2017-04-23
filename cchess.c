@@ -64,16 +64,34 @@ void translate_move(char * cmove, int * imove) {
 
 }
 
+bool is_diagonal(int x_moves, int y_moves) {
+  return (abs(x_moves)-abs(y_moves)) != 0);
+}
+
 /* Check if the diagonal move is clear one position before dest */
 int is_diagonal_clear(int * origin, int * dest) {
-  // Invalid diagonal
-  if (((abs(*(origin)) - abs(*(dest))) != 0) ||( (abs(*(origin+1)) - abs(*(dest+1))) != 0)) {
-    return false;
-  }
 
-  // TODO: Parallel?
-  for (int i = *origin; i < *dest; i++) {
-    /* code */
+  int x_moves = *(origin) - *(dest);
+  int y_moves = *(origin+1) - *(dest+1);
+
+  // Check valid diagonal
+  if (!is_diagonal(x_moves, y_moves)) return false;
+
+  // Get all positions ine before dest
+  int index = abs(x_moves) - 1;
+  wchar_t item_at_position;
+
+  // Iterate thru all items excepting initial posi
+  while (index > 0) {
+
+    if (x_moves > 0 && y_moves > 0) item_at_position = board[*origin-index][*(origin+1)-index];
+    if (x_moves > 0 && y_moves < 0) item_at_position = board[*origin-index][*(origin+1)+index];
+    if (x_moves < 0 && y_moves < 0 ) item_at_position = board[*origin+index][*(origin+1)+index];
+    if (x_moves < 0 && y_moves > 0 ) item_at_position = board[*origin+index][*(origin+1)-index];
+
+    if (item_at_position != 0) return false;
+
+    index --;
   }
 
   return true;
@@ -81,14 +99,28 @@ int is_diagonal_clear(int * origin, int * dest) {
 
 /* Check if the rect move is clear one position before dest */
 int is_rect_clear(int * origin, int * dest) {
-  return true;
+
+  int x_moves = *(origin) - *(dest);
+  int y_moves = *(origin+1) - *(dest+1);
+
+  // Is a side rect
+  if (y_moves != 0 && x_moves == 0) {
+
+  }
+  // Is a front/back rect
+  else if (x_moves != 0 && y_moves == 0) {
+
+  }
+  // Is a invalid rect
+  else {
+    return false;
+  }
 }
 
 bool eat_piece(int * position) {
-  // Check if there's a piece there
-  // if (board[*(position)][*(position+1)] == 0) return false;
-  // Add piece to the graveyard
-  printf(RED "Eating piece..." RESET);
+  // If there's no piece there return false
+  if (get_piece_team(position) == 0) return false;
+
   return true;
 }
 
@@ -120,9 +152,13 @@ int check_move(int * origin, int * dest) {
   }
 
   // If the origin piece's team == dest piece's team is an invalid move
-  // if (team_in_origin == team_in_dest) {
-  //   return 2;
-  // }
+  if (team_in_origin == team_in_dest) {
+    return 2;
+  }
+
+  // TODO
+  // If is_line_clear()
+    // Check if last position is either a position or a other team's piece
 
   /* --- SPECIFIC RULES --- */
   switch (origin_piece_type) {
@@ -131,24 +167,30 @@ int check_move(int * origin, int * dest) {
       break;
     case 1: /* --- ♛ --- */
       //Diagonal or straight move
-      if ((abs(x_moves)-abs(y_moves)) != 0) { // Check if it's a valid diagonal move
+      if (is_diagonal(x_moves, y_moves)) { // Check if it's different than a diagonal move
+        if (is_diagonal_clear(origin, dest)) {
+          if (eat_piece(dest)) return 99;
+        }
+        return 11;
+      } else {
         if ((y_moves > 0 && x_moves != 0) || (x_moves > 0 && y_moves != 0)) { // Check if it's a valid straight move
           return 10;
         } else {
           // TODO
-          // clear_line();
+          // is_line_clear();
         }
-      } else {
-        // TODO
-        // clear_diagonal();
       }
       break;
     case 2: /* --- ♜ --- */
       if ((y_moves > 0 && x_moves != 0) || (x_moves > 0 && y_moves != 0)) return 20;
       break;
     case 3: // ♝
-      if ((abs(x_moves)-abs(y_moves)) != 0) return 30;
-      printf("break one\n");
+      // Check if it's a valid diagonal move
+      if (!is_diagonal(x_moves, y_moves)) return 30;
+      if (is_diagonal_clear(origin, dest)) {
+        if (eat_piece(dest)) return 99;
+      }
+      return 31;
       break;
     case 4: /* --- ♞ --- */
       // Check if if it's a knight's valid move
@@ -157,7 +199,8 @@ int check_move(int * origin, int * dest) {
     case 5: /* --- ♟ --- */
       if (y_moves != 0) {
         // Check if it's a diagonal move and it's not an empty location
-        if ((abs(y_moves) == 1 && abs(x_moves == 1)) && (team_in_dest != 0)) {
+        if (is_diagonal_clear(origin, dest) && (team_in_dest != 0)) {
+          // If we can eat something, eat it
           if (eat_piece(dest)) return 99;
         }
         return 50;
