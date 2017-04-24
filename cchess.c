@@ -65,7 +65,12 @@ void translate_move(char * cmove, int * imove) {
 }
 
 bool is_diagonal(int x_moves, int y_moves) {
-  return (abs(x_moves)-abs(y_moves)) != 0);
+  printf("%d - %d\n", x_moves, y_moves);
+  printf("%d\n", ((abs(x_moves)-abs(y_moves)) != 0));
+  if ((abs(x_moves)-abs(y_moves)) != 0) {
+    return false;
+  }
+  return true;
 }
 
 /* Check if the diagonal move is clear one position before dest */
@@ -97,6 +102,15 @@ int is_diagonal_clear(int * origin, int * dest) {
   return true;
 }
 
+bool is_rect(int x_moves, int y_moves) {
+  printf("xmoves -> %d, ymoves -> %d\n", x_moves, y_moves);
+  if ((abs(x_moves) > 0 && y_moves == 0) || (abs(y_moves) > 0 && x_moves == 0)) {
+    return true;
+  }
+  printf("Invalid rect\n");
+  return false;
+}
+
 /* Check if the rect move is clear one position before dest */
 int is_rect_clear(int * origin, int * dest) {
 
@@ -104,24 +118,36 @@ int is_rect_clear(int * origin, int * dest) {
   int y_moves = *(origin+1) - *(dest+1);
 
   // Is a side rect
-  if (y_moves != 0 && x_moves == 0) {
+  int index;
 
+  if (abs(x_moves) > abs(y_moves)) {
+    index = abs(x_moves) - 1;
+  } else {
+    index = abs(y_moves) - 1;
   }
-  // Is a front/back rect
-  else if (x_moves != 0 && y_moves == 0) {
 
+  wchar_t item_at_position;
+
+  // Iterate thru all items excepting initial posi
+  while (index > 0) {
+
+    if (x_moves > 0) item_at_position = board[*origin-index][*(origin+1)];
+    if (x_moves < 0) item_at_position = board[*origin+index][*(origin+1)];
+    if (y_moves > 0 ) item_at_position = board[*origin][*(origin+1)-index];
+    if (y_moves < 0 ) item_at_position = board[*origin][*(origin+1)+index];
+
+    if (item_at_position != 0) return false;
+
+    index --;
   }
-  // Is a invalid rect
-  else {
-    return false;
-  }
+
+  return true;
+
 }
 
 bool eat_piece(int * position) {
   // If there's no piece there return false
-  if (get_piece_team(position) == 0) return false;
-
-  return true;
+  return (get_piece_team(position) != 0);
 }
 
 /* Check if the move status like valid, invalid, eated piece and more */
@@ -152,9 +178,9 @@ int check_move(int * origin, int * dest) {
   }
 
   // If the origin piece's team == dest piece's team is an invalid move
-  if (team_in_origin == team_in_dest) {
-    return 2;
-  }
+  // if (team_in_origin == team_in_dest) {
+  //   return 2;
+  // }
 
   // TODO
   // If is_line_clear()
@@ -166,31 +192,43 @@ int check_move(int * origin, int * dest) {
       if (abs(x_moves) > 1 || abs(y_moves) > 1) return 0;
       break;
     case 1: /* --- ♛ --- */
-      //Diagonal or straight move
+      // Diagonal or straight move
       if (is_diagonal(x_moves, y_moves)) { // Check if it's different than a diagonal move
         if (is_diagonal_clear(origin, dest)) {
           if (eat_piece(dest)) return 99;
-        }
-        return 11;
-      } else {
-        if ((y_moves > 0 && x_moves != 0) || (x_moves > 0 && y_moves != 0)) { // Check if it's a valid straight move
-          return 10;
         } else {
-          // TODO
-          // is_line_clear();
+          return 11;
+        }
+      } else {
+        // Check if it's a valid straight move
+        if (is_rect(x_moves, y_moves)) {
+          if (is_rect_clear(origin, dest)) {
+            if (eat_piece(dest)) return 99;
+          } else {
+            return 11;
+          }
+        } else {
+          return 10;
         }
       }
       break;
     case 2: /* --- ♜ --- */
       if ((y_moves > 0 && x_moves != 0) || (x_moves > 0 && y_moves != 0)) return 20;
+      // Check if rect move is clear
+      if (is_rect_clear(origin, dest)) {
+        if (eat_piece(dest)) return 99;
+      } else {
+        return 21;
+      }
       break;
     case 3: // ♝
       // Check if it's a valid diagonal move
       if (!is_diagonal(x_moves, y_moves)) return 30;
       if (is_diagonal_clear(origin, dest)) {
         if (eat_piece(dest)) return 99;
+      } else {
+        return 31;
       }
-      return 31;
       break;
     case 4: /* --- ♞ --- */
       // Check if if it's a knight's valid move
