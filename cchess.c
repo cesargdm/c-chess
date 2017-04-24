@@ -70,6 +70,8 @@ int main(int argc, char const *argv[]) {
   pthread_cond_init(&on_match, NULL);
   pthread_cond_init(&on_signal, NULL);
 
+  // ASK FOR TEAM
+
   pthread_create(&tid[0], NULL, &socket_io, NULL);
   pthread_create(&tid[1], NULL, &graphical_interface, NULL);
 
@@ -81,7 +83,6 @@ int main(int argc, char const *argv[]) {
 }
 
 void * graphical_interface() {
-
 
   pthread_mutex_lock(&general_mutex);
 
@@ -107,6 +108,8 @@ void * socket_io() {
   pthread_mutex_lock(&general_mutex);
 
   // Connect to server
+
+  // Send team type
   printf("Connecting to server...\n");
   sleep(2);
   // Send connected signal
@@ -115,6 +118,8 @@ void * socket_io() {
   // On challenger found
   printf("Looking for open match...\n");
   sleep(2);
+  // GET MATCH_ID
+
   pthread_cond_signal(&on_connect);
 
   //Unlock mutex
