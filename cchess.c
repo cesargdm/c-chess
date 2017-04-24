@@ -7,6 +7,7 @@
 #include <wchar.h>
 #include <locale.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 #include "board.c"
 #include "piece.c"
@@ -14,6 +15,8 @@
 #define RED   "\x1B[31m"
 #define RESET "\x1B[0m"
 #define MAX_MOVE_LENGTH 256
+
+#define TEAM 0
 
 char move[MAX_MOVE_LENGTH];
 
@@ -38,19 +41,96 @@ int make_move();
 void debug_print_board();
 int ask_move();
 
+void * socket_io();
+void socket_io_emit(char *);
+void * graphical_interface();
+
+char * signal_data;
+
+pthread_cond_t on_connect;
+pthread_cond_t on_match;
+pthread_cond_t on_signal;
+pthread_mutex_t general_mutex;
 
 int main(int argc, char const *argv[]) {
 
+  // Initialize 3 threads
+    // UI - moves
+    // Web changes
+
+  pthread_t tid[3];
+
   // Print the board
+
+  // Init mutex
+  pthread_mutex_init(&general_mutex, NULL);
+
+  // Init conditional variables
+  pthread_cond_init(&on_connect, NULL);
+  pthread_cond_init(&on_match, NULL);
+  pthread_cond_init(&on_signal, NULL);
+
+  pthread_create(&tid[0], NULL, &socket_io, NULL);
+  pthread_create(&tid[1], NULL, &graphical_interface, NULL);
+
+  while (1) {
+    sleep(1);
+  }
+
+  return 0;
+}
+
+void * graphical_interface() {
+
+
+  pthread_mutex_lock(&general_mutex);
+
+  pthread_cond_wait(&on_connect, &general_mutex);
+  printf("watch_count(): thread Condition signal received.\n");
+
+  // Print initial state of board
   print_board();
 
   while (1) {
+    // Wait for signal of user recieved
+    // pthread_cond_wait(&on_connect, &general_mutex);
     while (ask_move());
     make_move();
     print_board();
   }
-
   return 0;
+  pthread_mutex_unlock(&general_mutex);
+}
+
+
+void * socket_io() {
+  pthread_mutex_lock(&general_mutex);
+
+  // Connect to server
+  printf("Connecting to server...\n");
+  sleep(2);
+  // Send connected signal
+  // pthread_cond_signal(&on_connect);
+
+  // On challenger found
+  printf("Looking for open match...\n");
+  sleep(2);
+  pthread_cond_signal(&on_connect);
+
+  //Unlock mutex
+  pthread_mutex_unlock(&general_mutex);
+
+  // Listen for changes
+  while (1) {
+    // Send signals recieved to UI thread
+    // signal_data =
+    // pthread_cond_signal(&on_signal);
+  }
+  return 0;
+}
+
+void socket_io_emit(char * argv) {
+  // Send data to server
 }
 
 void move_piece(int * origin, int * dest) {
@@ -207,11 +287,12 @@ int check_move(int * origin, int * dest) {
     case 4: /* --- ♞ --- */
       // Check if if it's a knight's valid move
       if ((abs(x_moves) != 1 || abs(y_moves) != 2) && (abs(x_moves) != 2 || abs(y_moves) != 1)) return 40;
+      if (eat_piece(dest)) return 99; // Check if there's something to eat
       break;
     case 5: /* --- ♟ --- */
       if (y_moves != 0) {
         if (!is_diagonal(x_moves, y_moves) || (team_in_dest == 0)) return 50; // Check if it's a diagonal move and it's not an empty location
-        if (eat_piece(dest)) return 99; // If we can eat something, eat it
+        if (eat_piece(dest)) return 99; // Check if there's something to eat
       }
       if (*origin == 6 || *origin == 1) {
         if (x_moves > 2) return 51;
