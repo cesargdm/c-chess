@@ -72,12 +72,12 @@ void translate_move(char * cmove, int * imove) {
 }
 
 bool is_diagonal(int x_moves, int y_moves) {
-  printf("%d - %d\n", x_moves, y_moves);
-  printf("%d\n", ((abs(x_moves)-abs(y_moves)) != 0));
+
   if ((abs(x_moves)-abs(y_moves)) != 0) {
     return false;
   }
   return true;
+
 }
 
 /* Check if the diagonal move is clear one position before dest */
@@ -246,7 +246,6 @@ int make_move() {
   99 Eated piece
 
   */
-  printf("status %d\n", status);
 
   switch (status) {
     case 0: //Simple move
