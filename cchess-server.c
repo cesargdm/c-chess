@@ -22,9 +22,9 @@
 
 #include <string.h>
 
-int new_thread(void *new_socket) {
+int new_thread(void *client_socket) {
   /* If connection is established then start communicating */
-  int new_socket_num = *(int *)new_socket;
+  int new_socket_num = *(int *)client_socket;
   int n;
   char buffer[256];
 
@@ -37,7 +37,7 @@ int new_thread(void *new_socket) {
        exit(1);
     }
 
-    printf("Here is the message: %s\n", buffer);
+    printf("Here is the message from %d: %s\n", new_socket_num, buffer);
 
     /* Write a response to the client */
     n = write(new_socket_num, "I got your message", 18);
@@ -52,7 +52,7 @@ int new_thread(void *new_socket) {
 int main( int argc, char *argv[] ) {
   pthread_t tid [5];
 
-   int sockfd, new_socket, portno, client_length;
+   int sockfd, client_socket, portno, client_length;
    char buffer[256];
    struct sockaddr_in serv_addr, cli_addr;
    int  n;
@@ -83,23 +83,25 @@ int main( int argc, char *argv[] ) {
       * go in sleep mode and will wait for the incoming connection
    */
 
-            /* MAX_QUEUE */
+          /* MAX_QUEUE */
   listen(sockfd, 5);
 
    while(1) {
-     printf("While\n");
      client_length = sizeof(cli_addr);
+     sleep(5);
+     // CHECK IF WE'VE A WAITING USER
+
 
      /* Accept actual connection from the client */
-     new_socket = accept(sockfd, (struct sockaddr *)&cli_addr, &client_length);
-     printf("Socket fd %d\n", cli_addr.sin_addr.s_addr);
+     client_socket = accept(sockfd, (struct sockaddr *)&cli_addr, &client_length);
+     printf("Connection accepted from %d at :%d\n", client_socket, cli_addr.sin_port);
 
-     if (new_socket < 0) {
+     if (client_socket < 0) {
         perror("ERROR on accept");
         exit(1);
      }
 
-     pthread_create(&tid[0], NULL, &new_thread, &new_socket);
+     pthread_create(&tid[0], NULL, &new_thread, &client_socket);
 
    }
 
