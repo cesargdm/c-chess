@@ -3,15 +3,7 @@
 //   // Send new client_id
 // }
 
-// int emmit(int event, char * client_id, char const *data[]) {
-//   // Data == board status
-//   switch (event) {
-//     case 0:
-//       // SEnd to client_id the data passed thru
-//     break
-//   }
-//   return 0;
-// }
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,14 +14,29 @@
 
 #include <string.h>
 
+// int emmit(int event, char * client_id, char const *data[]) {
+//   // Data == board status
+//   switch (event) {
+//     case 0:
+//       // SEnd to client_id the data passed thru
+//     break
+//   }
+//   return 0;
+// }
+
 int new_thread(void *client_socket) {
   /* If connection is established then start communicating */
   int new_socket_num = *(int *)client_socket;
   int n;
   char buffer[256];
+  // Create a new board
+
+  // Set player_waiting true
+  // Conditional variable to wait for a player two
 
   while (1) {
     bzero(buffer, 256);
+            /* Read from player 1 */
     n = read(new_socket_num, buffer, 255);
 
     if (n < 0) {
@@ -39,22 +46,24 @@ int new_thread(void *client_socket) {
 
     printf("Here is the message from %d: %s\n", new_socket_num, buffer);
 
-    /* Write a response to the client */
-    n = write(new_socket_num, "I got your message", 18);
+    /* TODO process movement and change the board */
 
-    if (n < 0) {
+              /* Write to player 1 and 2 the board*/
+    if (write(new_socket_num, "I got your\nmessage", 18) < 0) {
        perror("ERROR writing to socket");
        exit(1);
     }
+
+    // Now read from player two
   }
 }
 
 int main( int argc, char *argv[] ) {
   pthread_t tid [5];
 
-   int sockfd, client_socket, portno, client_length;
+   int sockfd, client_socket, port_number, client_length;
    char buffer[256];
-   struct sockaddr_in serv_addr, cli_addr;
+   struct sockaddr_in server_address, client;
    int  n;
 
    /* First call to socket() function */
@@ -66,15 +75,15 @@ int main( int argc, char *argv[] ) {
    }
 
    /* Initialize socket structure */
-   bzero((char *) &serv_addr, sizeof(serv_addr));
-   portno = 8080;
+   bzero((char *) &server_address, sizeof(server_address));
+   port_number = 8000;
 
-   serv_addr.sin_family = AF_INET;
-   serv_addr.sin_addr.s_addr = INADDR_ANY;
-   serv_addr.sin_port = htons(portno);
+   server_address.sin_family = AF_INET;
+   server_address.sin_addr.s_addr = INADDR_ANY;
+   server_address.sin_port = htons(port_number);
 
    /* Now bind the host address using bind() call.*/
-   if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+   if (bind(sockfd, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
       perror("ERROR on binding");
       exit(1);
    }
@@ -87,21 +96,23 @@ int main( int argc, char *argv[] ) {
   listen(sockfd, 5);
 
    while(1) {
-     client_length = sizeof(cli_addr);
-     sleep(5);
+     client_length = sizeof(client);
      // CHECK IF WE'VE A WAITING USER
 
-
      /* Accept actual connection from the client */
-     client_socket = accept(sockfd, (struct sockaddr *)&cli_addr, &client_length);
-     printf("Connection accepted from %d at :%d\n", client_socket, cli_addr.sin_port);
+     client_socket = accept(sockfd, (struct sockaddr *)&client, &client_length);
+     printf("Connection accepted from %d at %d.%d.%d.%d:%d\n", client_socket, client.sin_addr.s_addr&0xFF, (client.sin_addr.s_addr&0xFF00)>>8, (client.sin_addr.s_addr&0xFF0000)>>16, (client.sin_addr.s_addr&0xFF000000)>>24, client.sin_port);
 
      if (client_socket < 0) {
         perror("ERROR on accept");
         exit(1);
      }
 
+     // Check if a user is already waiting
+     // If there's no one waiting create a new thread
      pthread_create(&tid[0], NULL, &new_thread, &client_socket);
+
+     // If a user is waiting change user_waiting variable to *client_socket
 
    }
 
