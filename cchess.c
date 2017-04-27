@@ -63,17 +63,16 @@ int main(int argc, char const *argv[]) {
   // Print the board
 
   // Init mutex
-  pthread_mutex_init(&general_mutex, NULL);
+  // pthread_mutex_init(&general_mutex, NULL);
 
   // Init conditional variables
-  pthread_cond_init(&on_connect, NULL);
-  pthread_cond_init(&on_match, NULL);
-  pthread_cond_init(&on_signal, NULL);
+  // pthread_cond_init(&on_connect, NULL);
+  // pthread_cond_init(&on_match, NULL);
+  // pthread_cond_init(&on_signal, NULL);
 
   // ASK FOR TEAM
-
-  pthread_create(&tid[0], NULL, &socket_io, NULL);
-  pthread_create(&tid[1], NULL, &graphical_interface, NULL);
+  // pthread_create(&tid[0], NULL, &socket_io, NULL);
+  pthread_create(&tid[0], NULL, &graphical_interface, NULL);
 
   while (1) {
     sleep(1);
@@ -84,9 +83,12 @@ int main(int argc, char const *argv[]) {
 
 void * graphical_interface() {
 
-  pthread_mutex_lock(&general_mutex);
+  // pthread_mutex_lock(&general_mutex);
 
-  pthread_cond_wait(&on_connect, &general_mutex);
+  // Create board
+  char * the_board = create_board();
+
+  // pthread_cond_wait(&on_connect, &general_mutex);
   printf("watch_count(): thread Condition signal received.\n");
 
   // Print initial state of board
@@ -100,7 +102,7 @@ void * graphical_interface() {
     print_board();
   }
   return 0;
-  pthread_mutex_unlock(&general_mutex);
+  // pthread_mutex_unlock(&general_mutex);
 }
 
 
@@ -120,10 +122,10 @@ void * socket_io() {
   sleep(2);
   // GET MATCH_ID
 
-  pthread_cond_signal(&on_connect);
+  // pthread_cond_signal(&on_connect);
 
   //Unlock mutex
-  pthread_mutex_unlock(&general_mutex);
+  // pthread_mutex_unlock(&general_mutex);
 
   // Listen for changes
   while (1) {

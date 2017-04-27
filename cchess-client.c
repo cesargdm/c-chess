@@ -7,6 +7,23 @@
 
 #include <string.h>
 
+void * on_signal(void * sockfd) {
+  char buffer[256];
+  int n;
+  int socket = *(int *)sockfd;
+  while (1) {
+    bzero(buffer,256);
+    n = read(socket, buffer, 255);
+
+    if (n < 0) {
+       perror("ERROR reading from socket");
+       exit(1);
+    }
+
+    printf("Message!\n%s\n", buffer);
+  }
+}
+
 int main(int argc, char *argv[]) {
    int sockfd, portno, n;
    struct sockaddr_in serv_addr;
@@ -53,7 +70,7 @@ int main(int argc, char *argv[]) {
    while (1) {
      printf("Please enter the message: ");
      bzero(buffer,256);
-     fgets(buffer,255,stdin);
+     fgets(buffer, 255, stdin);
 
      /* Send message to the server */
      n = write(sockfd, buffer, strlen(buffer));

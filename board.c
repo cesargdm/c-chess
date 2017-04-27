@@ -17,6 +17,9 @@
 
 
 // Unique global variable BOARD
+
+
+   // const
 static wchar_t board [8][8] = {
   { white_rook, white_knight, white_bishop, white_queen, white_king, white_bishop, white_knight, white_rook },
   { white_pawn, white_pawn, white_pawn, white_pawn, white_pawn, white_pawn, white_pawn, white_pawn },
@@ -28,12 +31,68 @@ static wchar_t board [8][8] = {
   { black_rook, black_knight, black_bishop, black_queen, black_king, black_bishop, black_knight, black_rook }
 };
 
+static wchar_t ** create_board() {
+  // create dinamically malloc
+
+  wchar_t ** board = (wchar_t **) malloc(sizeof(wchar_t *)*8);
+  for (int i = 0; i < 8; i++) {
+    board[i] = (wchar_t *) malloc(sizeof(wchar_t)*8);
+  }
+
+  return board;
+}
+
+static void initialize_board(wchar_t ** p_board) {
+  for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
+
+      if (i == 0) {
+        if (j == 0 || j == 7) p_board[i][j] = black_rook;
+        if (j == 1 || j == 6) p_board[i][j] = black_knight;
+        if (j == 2 || j == 5) p_board[i][j] = black_bishop;
+        if (j == 3) p_board[i][j] = black_queen;
+        if (j == 4) p_board[i][j] = black_king;
+      }
+
+      if (i == 1) p_board[i][j] = black_pawn;
+
+      if (i > 1 && i < 6) p_board[i][j] = '\0';
+
+      if (i == 6) p_board[i][j] = white_pawn;
+      if (i == 7) {
+        if(j == 0 || j == 7) p_board[i][j] = white_rook;
+        if(j == 1 || j == 6) p_board[i][j] = white_knight;
+        if(j == 2 || j == 5) p_board[i][j] = white_bishop;
+        if(j == 3) p_board[i][j] = white_queen;
+        if(j == 4) p_board[i][j] = white_king;
+      }
+    }
+  }
+}
+
+static void free_board(wchar_t ** board) {
+  for (int i = 0; i < 8; i++) {
+    free(board[i]);
+  }
+  free(board);
+}
+
 static int piece_at(int x, int y) {
   wchar_t piece = board[x][y];
   if (piece == 0) {
     piece = ' ';
   }
   return piece;
+}
+
+static void debug_print_board(wchar_t ** board) {
+  setlocale( LC_ALL, "en_US.UTF-8" );
+  for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
+      printf("%lc ", board[i][j]);
+    }
+    printf("\n");
+  }
 }
 
 static void print_board() {
