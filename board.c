@@ -15,8 +15,7 @@
 #define black_knight 0x265E // ♞
 #define black_pawn   0x265F // ♟
 
-
-// Unique global variable BOARD
+static void debug_print_board(wchar_t **);
 
    // const
 static wchar_t board [8][8] = {
@@ -55,7 +54,7 @@ static void initialize_board(wchar_t ** p_board) {
 
       if (i == 1) p_board[i][j] = white_pawn;
 
-      if (i > 1 && i < 6) p_board[i][j] = '\0';
+      if (i > 1 && i < 6) p_board[i][j] = 0;
 
       if (i == 6) p_board[i][j] = black_pawn;
       if (i == 7) {
@@ -69,9 +68,39 @@ static void initialize_board(wchar_t ** p_board) {
   }
 }
 
-static void print_buffer_as_board(char * buffer) {
-  // TODO
-  printf("buffer...\n'%s'\n", buffer);
+static char * create_od_board() {
+  char * board = (char *) malloc(sizeof(char *)*8*8);
+  return board;
+}
+
+static void to_one_dimension_char(wchar_t ** board, char * od_board) {
+
+  for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
+      if (board[i][j] == white_rook) od_board[8*i+j] = '1';
+      else if (board[i][j] == white_knight) od_board[8*i+j] = '2';
+      else if (board[i][j] == white_bishop) od_board[8*i+j] = '3';
+      else if (board[i][j] == white_queen) od_board[8*i+j] = '4';
+      else if (board[i][j] == white_king) od_board[8*i+j] = '5';
+      else if (board[i][j] == white_pawn) od_board[8*i+j] = '6';
+      else if (board[i][j] == black_rook) od_board[8*i+j] = '7';
+      else if (board[i][j] == black_knight) od_board[8*i+j] = '8';
+      else if (board[i][j] == black_bishop) od_board[8*i+j] = '9';
+      else if (board[i][j] == black_queen) od_board[8*i+j] = 'a';
+      else if (board[i][j] == black_king) od_board[8*i+j] = 'b';
+      else if (board[i][j] == black_pawn) od_board[8*i+j] = 'c';
+      else od_board[8*i+j] = '0';
+    }
+  }
+
+  // for (int k = 0; k < 64; k++) {
+  //   printf("[%d]%lc ", k, od_board[k]);
+  // }
+
+}
+
+static void free_od_board(wchar_t * od_board) {
+  free(od_board);
 }
 
 static void free_board(wchar_t ** board) {
@@ -99,27 +128,46 @@ static void debug_print_board(wchar_t ** board) {
   }
 }
 
-static void print_board_buff(wchar_t ** board) {
+static wchar_t translate_piece (char char_piece) {
+  if (char_piece == '1') return white_rook;
+  else if (char_piece == '2') return white_knight;
+  else if (char_piece == '3') return white_bishop;
+  else if (char_piece == '4') return white_queen;
+  else if (char_piece == '5') return white_king;
+  else if (char_piece == '6') return white_pawn;
+  else if (char_piece == '7') return black_rook;
+  else if (char_piece == '8') return black_knight;
+  else if (char_piece == '9') return black_bishop;
+  else if (char_piece == 'a') return black_queen;
+  else if (char_piece == 'b') return black_king;
+  else if (char_piece == 'c') return black_pawn;
+  else return ' ';
+}
+
+static void print_board_buff(char * board) {
   setlocale( LC_ALL, "en_US.UTF-8" );
+  printf("\n             ┌───────────────────┐          \n");
+  printf("             │       C*CHESS     │          \n");
+  printf("             └───────────────────┘          \n\n");
   printf("         a   b   c   d   e   f   g   h     \n");
   printf("       ┌───┬───┬───┬───┬───┬───┬───┬───┐   \n");
-  printf("     8 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 8 \n", board[0][0], board[0][1], board[0][2], board[0][3], board[0][4], board[0][5], board[0][6], board[0][7]);
+  printf("     8 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 8 \n", translate_piece(board[0]), translate_piece(board[1]), translate_piece(board[2]), translate_piece(board[3]), translate_piece(board[4]), translate_piece(board[5]), translate_piece(board[6]), translate_piece(board[7]));
   printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
-  printf("     7 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 7 \n", board[1][0], board[1][1], board[1][2], board[1][3], board[1][4], board[1][5], board[1][6], board[1][7]);
+  printf("     7 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 7 \n", translate_piece(board[8]), translate_piece(board[9]), translate_piece(board[10]), translate_piece(board[11]), translate_piece(board[12]), translate_piece(board[13]), translate_piece(board[14]), translate_piece(board[15]));
   printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
-  printf("     6 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 6 \n", board[2][0], board[2][1], board[2][2], board[2][3], board[2][4], board[2][5], board[2][6], board[2][7]);
+  printf("     6 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 6 \n", translate_piece(board[16]), translate_piece(board[17]), translate_piece(board[18]), translate_piece(board[19]), translate_piece(board[20]), translate_piece(board[21]), translate_piece(board[22]), translate_piece(board[23]));
   printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
-  printf("     5 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 5 \n", board[3][0], board[3][1], board[3][2], board[3][3], board[3][4], board[3][5], board[3][6], board[3][7]);
+  printf("     5 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 5 \n", translate_piece(board[24]), translate_piece(board[25]), translate_piece(board[26]), translate_piece(board[27]), translate_piece(board[28]), translate_piece(board[29]), translate_piece(board[30]), translate_piece(board[31]));
   printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
-  printf("     4 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 4 \n", board[4][0], board[4][1], board[4][2], board[4][3], board[4][4], board[4][5], board[4][6], board[4][7]);
+  printf("     4 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 4 \n", translate_piece(board[32]), translate_piece(board[33]), translate_piece(board[34]), translate_piece(board[35]), translate_piece(board[36]), translate_piece(board[37]), translate_piece(board[38]), translate_piece(board[39]));
   printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
-  printf("     3 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 3 \n", board[5][0], board[5][1], board[5][2], board[5][3], board[5][4], board[5][5], board[5][6], board[5][7]);
+  printf("     3 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 3 \n", translate_piece(board[40]), translate_piece(board[41]), translate_piece(board[42]), translate_piece(board[43]), translate_piece(board[44]), translate_piece(board[45]), translate_piece(board[46]), translate_piece(board[47]));
   printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
-  printf("     2 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 2 \n", board[6][0], board[6][1], board[6][2], board[6][3], board[6][4], board[6][5], board[6][6], board[6][7]);
+  printf("     2 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 2 \n", translate_piece(board[48]), translate_piece(board[49]), translate_piece(board[50]), translate_piece(board[51]), translate_piece(board[52]), translate_piece(board[53]), translate_piece(board[54]), translate_piece(board[55]));
   printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
-  printf("     1 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 1 \n", board[7][0], board[7][1], board[7][2], board[7][3], board[7][4], board[7][5], board[7][6], board[7][7]);
+  printf("     1 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 1 \n", translate_piece(board[56]), translate_piece(board[57]), translate_piece(board[58]), translate_piece(board[59]), translate_piece(board[60]), translate_piece(board[61]), translate_piece(board[62]), translate_piece(board[63]));
   printf("       └───┴───┴───┴───┴───┴───┴───┴───┘   \n");
-  printf("         a   b   c   d   e   f   g   h     \n");
+  printf("         a   b   c   d   e   f   g   h     \n\n");
 }
 
 static void print_board() {
