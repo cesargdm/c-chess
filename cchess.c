@@ -38,7 +38,7 @@ int is_rect_clear(int *, int *);
 bool eat_piece(int *);
 int check_move(int *, int *);
 int make_move();
-void debug_print_board();
+// void debug_print_board();
 int ask_move();
 
 void * socket_io();
@@ -360,14 +360,14 @@ int make_move() {
   return status;
 }
 
-void debug_print_board() {
-  for (int i = 0; i < 8; i++) {
-    for (int j = 0; j < 8; j++) {
-      printf("%lc ", board[i][j]);
-    }
-    printf("\n");
-  }
-}
+// void debug_print_board() {
+//   for (int i = 0; i < 8; i++) {
+//     for (int j = 0; j < 8; j++) {
+//       printf("%lc ", board[i][j]);
+//     }
+//     printf("\n");
+//   }
+// }
 
 int ask_move() {
 

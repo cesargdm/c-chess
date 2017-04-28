@@ -18,7 +18,6 @@
 
 // Unique global variable BOARD
 
-
    // const
 static wchar_t board [8][8] = {
   { white_rook, white_knight, white_bishop, white_queen, white_king, white_bishop, white_knight, white_rook },
@@ -47,27 +46,32 @@ static void initialize_board(wchar_t ** p_board) {
     for (int j = 0; j < 8; j++) {
 
       if (i == 0) {
-        if (j == 0 || j == 7) p_board[i][j] = black_rook;
-        if (j == 1 || j == 6) p_board[i][j] = black_knight;
-        if (j == 2 || j == 5) p_board[i][j] = black_bishop;
-        if (j == 3) p_board[i][j] = black_queen;
-        if (j == 4) p_board[i][j] = black_king;
+        if (j == 0 || j == 7) p_board[i][j] = white_rook;
+        if (j == 1 || j == 6) p_board[i][j] = white_knight;
+        if (j == 2 || j == 5) p_board[i][j] = white_bishop;
+        if (j == 3) p_board[i][j] = white_queen;
+        if (j == 4) p_board[i][j] = white_king;
       }
 
-      if (i == 1) p_board[i][j] = black_pawn;
+      if (i == 1) p_board[i][j] = white_pawn;
 
       if (i > 1 && i < 6) p_board[i][j] = '\0';
 
-      if (i == 6) p_board[i][j] = white_pawn;
+      if (i == 6) p_board[i][j] = black_pawn;
       if (i == 7) {
-        if(j == 0 || j == 7) p_board[i][j] = white_rook;
-        if(j == 1 || j == 6) p_board[i][j] = white_knight;
-        if(j == 2 || j == 5) p_board[i][j] = white_bishop;
-        if(j == 3) p_board[i][j] = white_queen;
-        if(j == 4) p_board[i][j] = white_king;
+        if(j == 0 || j == 7) p_board[i][j] = black_rook;
+        if(j == 1 || j == 6) p_board[i][j] = black_knight;
+        if(j == 2 || j == 5) p_board[i][j] = black_bishop;
+        if(j == 3) p_board[i][j] = black_queen;
+        if(j == 4) p_board[i][j] = black_king;
       }
     }
   }
+}
+
+static void print_buffer_as_board(char * buffer) {
+  // TODO
+  printf("buffer...\n'%s'\n", buffer);
 }
 
 static void free_board(wchar_t ** board) {
@@ -93,6 +97,29 @@ static void debug_print_board(wchar_t ** board) {
     }
     printf("\n");
   }
+}
+
+static void print_board_buff(wchar_t ** board) {
+  setlocale( LC_ALL, "en_US.UTF-8" );
+  printf("         a   b   c   d   e   f   g   h     \n");
+  printf("       ┌───┬───┬───┬───┬───┬───┬───┬───┐   \n");
+  printf("     8 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 8 \n", board[0][0], board[0][1], board[0][2], board[0][3], board[0][4], board[0][5], board[0][6], board[0][7]);
+  printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
+  printf("     7 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 7 \n", board[1][0], board[1][1], board[1][2], board[1][3], board[1][4], board[1][5], board[1][6], board[1][7]);
+  printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
+  printf("     6 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 6 \n", board[2][0], board[2][1], board[2][2], board[2][3], board[2][4], board[2][5], board[2][6], board[2][7]);
+  printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
+  printf("     5 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 5 \n", board[3][0], board[3][1], board[3][2], board[3][3], board[3][4], board[3][5], board[3][6], board[3][7]);
+  printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
+  printf("     4 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 4 \n", board[4][0], board[4][1], board[4][2], board[4][3], board[4][4], board[4][5], board[4][6], board[4][7]);
+  printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
+  printf("     3 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 3 \n", board[5][0], board[5][1], board[5][2], board[5][3], board[5][4], board[5][5], board[5][6], board[5][7]);
+  printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
+  printf("     2 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 2 \n", board[6][0], board[6][1], board[6][2], board[6][3], board[6][4], board[6][5], board[6][6], board[6][7]);
+  printf("       ├───┼───┼───┼───┼───┼───┼───┼───┤   \n");
+  printf("     1 │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ %lc │ 1 \n", board[7][0], board[7][1], board[7][2], board[7][3], board[7][4], board[7][5], board[7][6], board[7][7]);
+  printf("       └───┴───┴───┴───┴───┴───┴───┴───┘   \n");
+  printf("         a   b   c   d   e   f   g   h     \n");
 }
 
 static void print_board() {

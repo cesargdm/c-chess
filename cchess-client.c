@@ -7,6 +7,8 @@
 
 #include <string.h>
 
+#include "board.c"
+
 void * on_signal(void * sockfd) {
   char buffer[256];
   int n;
@@ -20,7 +22,18 @@ void * on_signal(void * sockfd) {
        exit(1);
     }
 
-    printf("Message!\n%s\n", buffer);
+    printf("Message: '%s'\n", buffer);
+    if (buffer[0] == 'i' || buffer[0] == 'e') {
+      printf("Displaying message...\n");
+      // Check if it's an informative or error message
+    } else {
+      // Print the board
+      // Convert wchar_t * char to ** wchar_t
+      printf("Priting board...\n");
+
+    }
+    // Check if { playerMadeMove: true }
+    // Signal to read a new message
   }
 }
 
@@ -67,6 +80,11 @@ int main(int argc, char *argv[]) {
    /* Now ask for a message from the user, this message
       * will be read by server
    */
+
+   pthread_t tid[1];
+
+   pthread_create(&tid[0], NULL, &on_signal, &sockfd);
+
    while (1) {
      printf("Please enter the message: ");
      bzero(buffer,256);
@@ -81,15 +99,15 @@ int main(int argc, char *argv[]) {
      }
 
      /* Now read server response */
-     bzero(buffer,256);
-     n = read(sockfd, buffer, 255);
-
-     if (n < 0) {
-        perror("ERROR reading from socket");
-        exit(1);
-     }
-
-     printf("%s\n",buffer);
+    //  bzero(buffer,256);
+    //  n = read(sockfd, buffer, 255);
+     //
+    //  if (n < 0) {
+    //     perror("ERROR reading from socket");
+    //     exit(1);
+    //  }
+     //
+    //  printf("%s\n",buffer);
    }
 
    return 0;
