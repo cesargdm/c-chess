@@ -28,7 +28,6 @@ void * on_signal(void * sockfd) {
        exit(1);
     }
 
-
     if (buffer[0] == 'i' || buffer[0] == 'e' || buffer[0] == '\0') {
       if (buffer[0] == 'i') {
         if (buffer[2] == 't') {
@@ -70,8 +69,8 @@ void * on_signal(void * sockfd) {
               printf(RED "(out of range)\n" RESET);
               break;
           }
-          printf("error %s\n", buffer);
         }
+        printf("\nerror %s\n", buffer);
       }
       // Check if it's an informative or error message
     } else {
@@ -94,12 +93,13 @@ int main(int argc, char *argv[]) {
    setlocale(LC_ALL, "en_US.UTF-8");
    char buffer[64];
 
-   if (argc < 3) {
-      fprintf(stderr,"usage %s hostname port\n", argv[0]);
-      exit(0);
+   if (argv[2] == NULL) {
+     portno = 80;
+   } else {
+     portno = atoi(argv[2]);
    }
 
-   portno = atoi(argv[2]);
+   printf("Connecting to %s:%d\n", argv[1], portno);
 
    /* Create a socket point */
    sockfd = socket(AF_INET, SOCK_STREAM, 0);
