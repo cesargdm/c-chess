@@ -93,10 +93,6 @@ static void to_one_dimension_char(wchar_t ** board, char * od_board) {
     }
   }
 
-  // for (int k = 0; k < 64; k++) {
-  //   printf("[%d]%lc ", k, od_board[k]);
-  // }
-
 }
 
 static void free_od_board(wchar_t * od_board) {
@@ -109,14 +105,6 @@ static void free_board(wchar_t ** board) {
   }
   free(board);
 }
-
-// static int piece_at(int x, int y) {
-//   wchar_t piece = board[x][y];
-//   if (piece == 0) {
-//     piece = ' ';
-//   }
-//   return piece;
-// }
 
 static void debug_print_board(wchar_t ** board) {
   setlocale( LC_ALL, "en_US.UTF-8" );

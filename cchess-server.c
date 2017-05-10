@@ -27,8 +27,8 @@ int player_is_waiting = 0;
 
 void move_piece(wchar_t ** board, int * move) {
   // Move piece in board from origin to dest
-  board[*(move+2)][*(move+3)] = board[*move][*(move+1)];
-  board[*move][*(move+1)] = 0;
+  board[move[2]][move[3]] = board[*move][move[1]];
+  board[*move][move[1]] = 0;
 }
 
 bool emit(int client, char * message, int message_size) {
@@ -40,11 +40,11 @@ void translate_to_move(int * move, char * buffer) {
   printf("buffer: %s\n", buffer);
 
   *(move) = 8-(*(buffer+1)-'0');
-  *(move+1) = (*(buffer)-'0')-49;
-  *(move+2) = 8-(*(buffer+4)-'0');
-  *(move+3) = (*(buffer+3)-'0')-49;
+  move[1] = (*(buffer)-'0')-49;
+  move[2] = 8-(*(buffer+4)-'0');
+  move[3] = (*(buffer+3)-'0')-49;
 
-  // printf("[%d, %d] to [%d, %d]\n", *(move), *(move+1), *(move+2), *(move+3));
+  // printf("[%d, %d] to [%d, %d]\n", *(move), move[1], move[2], move[3]);
 }
 
 bool is_diagonal_clear(wchar_t ** board, int * move) {
@@ -52,8 +52,8 @@ bool is_diagonal_clear(wchar_t ** board, int * move) {
   int * x_moves = (int *)malloc(sizeof(int));
   int * y_moves = (int *)malloc(sizeof(int));
 
-  *(x_moves) = *(move) - *(move+2);
-  *(y_moves) = *(move+1) - *(move+3);
+  *(x_moves) = *(move) - move[2];
+  *(y_moves) = move[1] - move[3];
 
   int * index = (int *)malloc(sizeof(int));
   *(index) =  abs(*x_moves) - 1;
@@ -62,10 +62,10 @@ bool is_diagonal_clear(wchar_t ** board, int * move) {
   // Iterate thru all items excepting initial posi
   while (*index > 0) {
 
-    if (*x_moves > 0 && *y_moves > 0) { printf("%lc [%d,%d]\n", board[*move - *index][*(move+1)- *index],*move - *index,*(move+1)- *index); *item_at_position = board[*move - *index][*(move+1)- *index]; }
-    if (*x_moves > 0 && *y_moves < 0) { printf("%lc [%d,%d]\n", board[*move - *index][*(move+1)+ *index],*move - *index,*(move+1)+ *index); *item_at_position = board[*move - *index][*(move+1)+ *index]; }
-    if (*x_moves < 0 && *y_moves < 0 ) { printf("%lc [%d,%d]\n", board[*move + *index][*(move+1)+ *index],*move + *index,*(move+1)+ *index); *item_at_position = board[*move + *index][*(move+1)+ *index]; }
-    if (*x_moves < 0 && *y_moves > 0 ) { printf("%lc [%d,%d]\n", board[*move + *index][*(move+1)- *index],*move + *index,*(move+1)- *index); *item_at_position = board[*move + *index][*(move+1)- *index]; }
+    if (*x_moves > 0 && *y_moves > 0) { printf("%lc [%d,%d]\n", board[*move - *index][move[1]- *index],*move - *index,move[1]- *index); *item_at_position = board[*move - *index][move[1]- *index]; }
+    if (*x_moves > 0 && *y_moves < 0) { printf("%lc [%d,%d]\n", board[*move - *index][move[1]+ *index],*move - *index,move[1]+ *index); *item_at_position = board[*move - *index][move[1]+ *index]; }
+    if (*x_moves < 0 && *y_moves < 0 ) { printf("%lc [%d,%d]\n", board[*move + *index][move[1]+ *index],*move + *index,move[1]+ *index); *item_at_position = board[*move + *index][move[1]+ *index]; }
+    if (*x_moves < 0 && *y_moves > 0 ) { printf("%lc [%d,%d]\n", board[*move + *index][move[1]- *index],*move + *index,move[1]- *index); *item_at_position = board[*move + *index][move[1]- *index]; }
 
     if (*item_at_position != 0) {
       free(index);
@@ -135,6 +135,14 @@ int get_piece_team(wchar_t ** board, int x, int y) {
 
 }
 
+void promote_piece(wchar_t ** board, int destX, int destY, int team) {
+  if (team == 1) {
+    board[destX][destY] = 0x265B;
+  } else if (team == -1) {
+    board[destX][destY] = 0x2655;
+  }
+}
+
 int get_piece_type(wchar_t piece) {
 
   switch (piece) {
@@ -151,7 +159,6 @@ int get_piece_type(wchar_t piece) {
     case black_knight: return 4;
     case black_pawn: return 5;
   }
-
   return -1;
 
 }
@@ -161,8 +168,8 @@ bool is_rect(int * move) {
   int * x_moves = (int *)malloc(sizeof(int));
   int * y_moves = (int *)malloc(sizeof(int));
 
-  *x_moves = *(move) - *(move+2);
-  *y_moves = *(move+1) - *(move+3);
+  *x_moves = *(move) - move[2];
+  *y_moves = move[1] - move[3];
 
 
   if ((x_moves != 0 && y_moves == 0) || (y_moves != 0 && x_moves == 0)) {
@@ -190,10 +197,10 @@ int is_rect_clear(wchar_t ** board, int * move, int x_moves, int y_moves ) {
   // Iterate thru all items excepting initial position
   while (*index > 0) {
 
-    if (*(move) - *(move+2) > 0) { if (board[*move-(*index)][*(move+1)] != 0) { free(index); return false; } }
-    if (*(move) - *(move+2) < 0) { if (board[*move+(*index)][*(move+1)] != 0) { free(index); return false; } }
-    if (*(move+1) - *(move+3) > 0 ) { if (board[*move][*(move+1)-(*index)] != 0) { free(index); return false; } }
-    if (*(move+1) - *(move+3) < 0 ) { if (board[*move][*(move+1)+(*index)] != 0) { free(index); return false; } }
+    if (*(move) - move[2] > 0) { if (board[*move-(*index)][move[1]] != 0) { free(index); return false; } }
+    if (*(move) - move[2] < 0) { if (board[*move+(*index)][move[1]] != 0) { free(index); return false; } }
+    if (move[1] - move[3] > 0 ) { if (board[*move][move[1]-(*index)] != 0) { free(index); return false; } }
+    if (move[1] - move[3] < 0 ) { if (board[*move][move[1]+(*index)] != 0) { free(index); return false; } }
 
     (*index)--;
   }
@@ -220,80 +227,144 @@ bool eat_piece(wchar_t ** board, int x, int y) {
   return (get_piece_team(board, x, y) != 0);
 }
 
+void freeAll(int * piece_team, int * x_moves, int * y_moves) {
+  free(piece_team);
+  free(x_moves);
+  free(y_moves);
+}
+
 bool is_move_valid(wchar_t ** board, int player, int team, int * move) {
 
+  int * piece_team = (int *)malloc(sizeof(int *));
+  int * x_moves = (int *)malloc(sizeof(int *));
+  int * y_moves = (int *)malloc(sizeof(int *));
+
+  *piece_team = get_piece_team(board, *(move), move[1]);
+  *x_moves = getManitud(*move, move[2]);
+  *y_moves = getManitud(move[1], move[3]);
+
   // General errors
-  if (board[*(move)][*(move+1)] == 0) {
+  if (board[*(move)][move[1]] == 0) {
     send(player, "e-08", 4, 0);
     return false;
   }  // If selected piece == 0 there's nothing selected
-  if (get_piece_team(board, *(move), *(move+1)) == get_piece_team(board, *(move+2), *(move+3))) {
+  if (*piece_team == get_piece_team(board, move[2], move[3])) {
     send(player, "e-09", 4, 0);
     return false;
   } // If the origin piece's team == dest piece's team is an invalid move
 
-  // XMOVES = getManitud(*move, *(move+2))
-  // YMOVES = getManitud(*(move+1), *(move+3))
-  printf("Moved piece -> %d \n", get_piece_type(board[*(move)][*(move+1)]));
-  switch (get_piece_type(board[*(move)][*(move+1)])) {
+  // Check if user is moving his piece
+  if (team != *piece_team) {
+    send(player, "e-07", 4, 0);
+    return false;
+  }
+
+  printf("Player %d(%d) [%d,%d] to [%d,%d]\n", player, *piece_team, move[0], move[1], move[2], move[3]);
+
+  // XMOVES = getManitud(*move, move[2])
+  // YMOVES = getManitud(move[1], move[3])
+  printf("Moved piece -> %d \n", get_piece_type(board[*(move)][move[1]]));
+  switch (get_piece_type(board[*(move)][move[1]])) {
     case 0: /* --- ♚ --- */
-      if (getManitud(*move, *(move+2)) > 1 || getManitud(*(move+1), *(move+3)) > 1) {
+      if (*x_moves > 1 || getManitud(move[1], move[3]) > 1) {
         send(player, "e-10", 5, 0);
+        freeAll(piece_team, x_moves, y_moves);
         return false;
       }
       break;
     case 2: /* --- ♜ --- */
       if (!is_rect(move)) {
         send(player, "e-30", 5, 0);
+        freeAll(piece_team, x_moves, y_moves);
         return false;
       }
-      if (!is_rect_clear(board, move, getManitud(*move, *(move+2)), getManitud(*(move+1), *(move+3)))) {
+      if (!is_rect_clear(board, move, *x_moves, *y_moves)) {
         send(player, "e-31", 4, 0);
+        freeAll(piece_team, x_moves, y_moves);
         return false;
       }
-      if (eat_piece(board, *(move+2), *(move+3))) {
+      if (eat_piece(board, move[2], move[3])) {
         send(player, "i-99", 4, 0);
+        freeAll(piece_team, x_moves, y_moves);
         return true;
       }
       break;
     case 3: /* ––– ♝ ––– */
-      if (!is_diagonal(getManitud(*move, *(move+2)), getManitud(*(move+1), *(move+3)))) {
+      if (!is_diagonal(*x_moves, getManitud(move[1], move[3]))) {
         send(player, "e-40", 4, 0);
+        freeAll(piece_team, x_moves, y_moves);
         return false; // Check if it's a valid diagonal move
       }
       if (!is_diagonal_clear(board, move)) {
         send(player, "e-41", 4, 0);
+        freeAll(piece_team, x_moves, y_moves);
         return false;
       }
-      if (eat_piece(board, *(move+2), *(move+3))) {
+      if (eat_piece(board, move[2], move[3])) {
         send(player, "i-99", 4, 0);
+        freeAll(piece_team, x_moves, y_moves);
         return true;
       }
       break;
     case 4: /* --- ♞ --- */
-      if ((abs(getManitud(*move, *(move+2))) != 1 || abs(getManitud(*(move+1), *(move+3))) != 2) && (abs(getManitud(*move, *(move+2))) != 2 || abs(getManitud(*(move+1), *(move+3))) != 1)) {
+      if ((abs(*x_moves) != 1 || abs(*y_moves) != 2) && (abs(*x_moves) != 2 || abs(*y_moves) != 1)) {
         send(player, "e-50", 4, 0);
-        return 40;
+        freeAll(piece_team, x_moves, y_moves);
+        return false;
+      }
+      if (eat_piece(board, move[2], move[3])) {
+        send(player, "i-99", 4, 0);
+        freeAll(piece_team, x_moves, y_moves);
+        return true;
       }
       break;
     case 5: /* --- ♟ --- */
-      // if (getManitud(*(move+1), *(move+3)) != 0) {
-      //   if (!is_diagonal(x_moves, y_moves) || (team_in_dest == 0)) return 50; // Check if it's a diagonal move and it's not an empty location
-      //   if (eat_piece(dest)) return 99; // Check if there's something to eat
-      // }
-    //   if (*origin == 6 || *origin == 1) {
-    //     if (x_moves > 2) return 51;
-    //   } else {
-        if (getManitud(*move, *(move+2)) > 1) {
+      if (get_piece_team(board, move[2], move[3]) == 1 && move[0] == 0) {
+        promote_piece(board, move[2], move[3], *piece_team);
+        send(player, "i-98", 4, 0);
+        freeAll(piece_team, x_moves, y_moves);
+        return true;
+      }
+      if (get_piece_team(board, move[2], move[3]) == -1 && move[0] == 7) {
+        promote_piece(board, move[2], move[3], *piece_team);
+        send(player, "i-98", 4, 0);
+        freeAll(piece_team, x_moves, y_moves);
+        return true;
+      }
+      // Moving in Y axis
+      if (getManitud(move[1], move[3]) != 0) {
+        if (!is_diagonal(*x_moves, *y_moves) || (get_piece_team(board, move[2], move[3]) == 0)) {
+          send(player, "e-60", 4, 0);
+          freeAll(piece_team, x_moves, y_moves);
+          return false; // Check if it's a diagonal move and it's not an empty location
+        }
+        if (eat_piece(board, move[2], move[3])) {
+          send(player, "i-99", 4, 0);
+          freeAll(piece_team, x_moves, y_moves);
+          return true; // Check if there's something to eat
+        }
+      } else {
+        // Check if it's the first move
+        if (move[0] == 6 && *piece_team == 1 && *x_moves == 2 ) {
+          printf("First move\n");
+          return true;
+        }
+        if (move[0] == 1 && *piece_team == -1 && *x_moves == 2 ) {
+          printf("First move\n");
+          return true;
+        }
+        if (*x_moves > 1) {
           send(player, "e-62", 5, 0);
+          freeAll(piece_team, x_moves, y_moves);
           return false;
         }
-    //   }
+      }
       break;
     default:
       break;
   }
 
+  freeAll(piece_team, x_moves, y_moves);
   return true;
 }
 
@@ -460,6 +531,7 @@ int main( int argc, char *argv[] ) {
 
           /* MAX_QUEUE */
   listen(sockfd, 20);
+  printf("Server listening on port %d\n", port_number);
 
    while(1) {
      client_length = sizeof(client);
