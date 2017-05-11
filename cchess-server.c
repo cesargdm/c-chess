@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <wchar.h>
 #include <locale.h>
+#include <signal.h>
 
 #include "board.c"
 
@@ -382,12 +383,7 @@ void * game_room(void *client_socket) {
   char * one_dimension_board = create_od_board();
   initialize_board(board);
 
-  // Set player_to_join true
-  // Conditional variable to wait for a player two
-
   player_is_waiting = 1; // Set user waiting
-
-  // send(player_one, "i-w", 4);
 
   pthread_mutex_lock(&general_mutex); // Wait for player two
   pthread_cond_wait(&player_to_join, &general_mutex); // Wait for player wants to join signal
@@ -409,6 +405,7 @@ void * game_room(void *client_socket) {
 
   sleep(1);
 
+  // Broadcast the board to all the room players
   broadcast(board, one_dimension_board, player_one, player_two);
 
   sleep(1);
@@ -477,9 +474,6 @@ void * game_room(void *client_socket) {
     syntax_valid = false;
     move_valid = false;
 
-    syntax_valid = false;
-    move_valid = false;
-
     // Apply move to board
     move_piece(board, move);
 
@@ -496,8 +490,7 @@ void * game_room(void *client_socket) {
 }
 
 int main( int argc, char *argv[] ) {
-  pthread_t tid [5];
-
+  pthread_t tid[1];
   setlocale(LC_ALL, "en_US.UTF-8");
 
   int sockfd, client_socket, port_number, client_length;
@@ -563,7 +556,6 @@ int main( int argc, char *argv[] ) {
        pthread_mutex_unlock(&general_mutex); // Unecesary?
        pthread_cond_signal(&player_to_join);
      }
-
 
    }
 

@@ -18,6 +18,7 @@ void * on_signal(void * sockfd) {
   char buffer[64];
   int n;
   int socket = *(int *)sockfd;
+  int * player = (int *)malloc(sizeof(int *));
 
   while (1) {
     bzero(buffer, 64);
@@ -37,8 +38,8 @@ void * on_signal(void * sockfd) {
           printf("\nWaiting for opponent...\n");
         }
         if (buffer[2] == 'p') {
-          int player = atoi(&buffer[3]);
-          if (player == 2) {
+          *player = atoi(&buffer[3]);
+          if (*player == 2) {
             printf("You're blacks (%c)\n", buffer[3]);
           } else {
             printf("You're whites (%c)\n", buffer[3]);
@@ -81,12 +82,14 @@ void * on_signal(void * sockfd) {
     } else {
       // Print the board
       system("clear");
-      print_board_buff(buffer);
+      if (*player == 1) {
+        print_board_buff(buffer);
+      } else {
+        print_board_buff_inverted(buffer);
+      }
     }
 
     bzero(buffer, 64);
-    // Check if { playerMadeMove: true }
-    // Signal to read a new message
   }
 }
 
@@ -138,6 +141,7 @@ int main(int argc, char *argv[]) {
 
    pthread_t tid[1];
 
+   // Response thread
    pthread_create(&tid[0], NULL, &on_signal, &sockfd);
 
    while (1) {
@@ -151,17 +155,6 @@ int main(int argc, char *argv[]) {
         perror("ERROR writing to socket");
         exit(1);
      }
-
-     /* Now read server response */
-    //  bzero(buffer,64);
-    //  n = read(sockfd, buffer, 64);
-     //
-    //  if (n < 0) {
-    //     perror("ERROR reading from socket");
-    //     exit(1);
-    //  }
-     //
-    //  printf("%s\n",buffer);
    }
 
    return 0;
