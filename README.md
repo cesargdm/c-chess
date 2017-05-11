@@ -1,7 +1,7 @@
 # C Chess
 > Online chess game written in C, using sockets, threads, dynamic memory and more
 
-This program was written for Final School Project for Advanced Programming topic.
+This program was written for Final School Project for Advanced Programming class.
 
 ## Build
 **Server**
@@ -23,4 +23,5 @@ This program was written for Final School Project for Advanced Programming topic
 > ./client localhost 8080
 ```
 
-&copy; 2017 César Guadarrama Cantú
+## License
+MIT &copy; 2017 César Guadarrama Cantú
