@@ -137,9 +137,9 @@ int get_piece_team(wchar_t ** board, int x, int y) {
 
 void promote_piece(wchar_t ** board, int destX, int destY, int team) {
   if (team == 1) {
-    board[destX][destY] = 0x265B;
+    board[destX][destY] = black_queen;
   } else if (team == -1) {
-    board[destX][destY] = 0x2655;
+    board[destX][destY] = white_queen;
   }
 }
 
@@ -319,13 +319,15 @@ bool is_move_valid(wchar_t ** board, int player, int team, int * move) {
       }
       break;
     case 5: /* --- ♟ --- */
-      if (get_piece_team(board, move[2], move[3]) == 1 && move[0] == 0) {
+      if (*piece_team == 1 && move[2] == 0) {
+        printf("Promoting piece\n");
         promote_piece(board, move[2], move[3], *piece_team);
         send(player, "i-98", 4, 0);
         freeAll(piece_team, x_moves, y_moves);
         return true;
       }
-      if (get_piece_team(board, move[2], move[3]) == -1 && move[0] == 7) {
+      if (*piece_team == -1 && move[2] == 7) {
+        printf("Promoting piece\n");
         promote_piece(board, move[2], move[3], *piece_team);
         send(player, "i-98", 4, 0);
         freeAll(piece_team, x_moves, y_moves);

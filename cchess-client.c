@@ -37,7 +37,12 @@ void * on_signal(void * sockfd) {
           printf("\nWaiting for opponent...\n");
         }
         if (buffer[2] == 'p') {
-          printf("You're player %c\n", buffer[3]);
+          int player = atoi(&buffer[3]);
+          if (player == 2) {
+            printf("You're blacks (%c)\n", buffer[3]);
+          } else {
+            printf("You're whites (%c)\n", buffer[3]);
+          }
         }
       }
       else if (buffer[0] == 'e') {
