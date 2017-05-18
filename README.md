@@ -6,7 +6,7 @@ This program was written for Final School Project for Advanced Programming class
 ## Build
 **Server**
 ```
-> gcc cchess.c board.c -o server
+> gcc cchess-server.c board.c -o server -pthread
 ```
 **Client**
 ```
