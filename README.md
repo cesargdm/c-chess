@@ -3,7 +3,7 @@
 
 This program was written for Final School Project for Advanced Programming class.
 
-
+![Animation of a chess move](https://github.com/cesargdm/c-chess/blob/main/c-chess.gif?raw=true)
 
 ## Compile
 
