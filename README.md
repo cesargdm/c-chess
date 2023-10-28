@@ -1,7 +1,8 @@
 # C Chess
+
 > Online chess game written in C, using sockets, threads, dynamic memory and more
 
-This program was written for Final School Project for Advanced Programming class.
+This program was written for Final School Project for Advanced Programming class in Tec de Monterrey.
 
 ![Animation of a chess move](https://github.com/cesargdm/c-chess/blob/main/c-chess.gif?raw=true)
 
@@ -16,7 +17,7 @@ This program was written for Final School Project for Advanced Programming class
 ### Client
 
 ```bash
-> gcc -pthread cchess-client.c -o client
+> gcc cchess-client.c -o client -pthread
 ```
 
 ## Run
@@ -39,4 +40,4 @@ You first need to run a server, after that you'll need to run two clients and st
 
 ## License
 
-MIT &copy; 2017 César Guadarrama Cantú
+MIT. César Guadarrama.
